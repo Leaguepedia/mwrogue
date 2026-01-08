@@ -299,7 +299,7 @@ class EsportsClient(FandomClient):
             return
         error_page = self.client.pages['Log:' + error_title]
         errors = [_.format_for_print() for _ in self.errors]
-        error_text = '<br><br><br>'.join(errors)
+        error_text = '<br><br>'.join(errors)
         old_text = error_page.text(cache=False)
         if not old_text:
             new_text = error_text
