@@ -17,8 +17,8 @@ class WikiError(object):
         error_text = self.error
         if isinstance(self.error, Exception):
             error_text = "<br>".join(traceback.format_exception(type(self.error), self.error, self.error.__traceback__))
-            error_text = error_text.replace("\n", "<br>")
-        return "<b>{}</b> - {} - {}:<br><br>{}".format(
+            error_text = error_text.replace("\n", "")
+        return "<b>{}</b> - {} - {}:<br>{}".format(
             self.date,
             self.error_type,
             '[[{}]]'.format(self.title) if self.title else '(No title recorded)',
