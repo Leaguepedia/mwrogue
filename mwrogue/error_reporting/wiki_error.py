@@ -16,8 +16,9 @@ class WikiError(object):
     def format_for_print(self):
         error_text = self.error
         if isinstance(self.error, Exception):
-            error_text = traceback.format_exception(None, self.error, self.error.__traceback__)
-        return '{} - {}: {} - {}'.format(
+            error_text = "<br>".join(traceback.format_exception(type(self.error), self.error, self.error.__traceback__))
+            error_text = error_text.replace("\n", "<br>")
+        return "<b>{}</b> - {} - {}:<br><br>{}".format(
             self.date,
             self.error_type,
             '[[{}]]'.format(self.title) if self.title else '(No title recorded)',

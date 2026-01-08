@@ -299,12 +299,12 @@ class EsportsClient(FandomClient):
             return
         error_page = self.client.pages['Log:' + error_title]
         errors = [_.format_for_print() for _ in self.errors]
-        error_text = '<br>\n'.join(errors)
+        error_text = '<br><br><br>'.join(errors)
         old_text = error_page.text(cache=False)
         if not old_text:
             new_text = error_text
         else:
-            new_text = f"{old_text}<br>{error_text}"
+            new_text = f"{old_text}<br><br><br>{error_text}"
         self.save(error_page, new_text, summary="Reporting errors via mwrogue")
 
         # reset the list so we can reuse later if needed
