@@ -9,10 +9,6 @@ from mwcleric.clients.site import Site
 
 
 class EsportsLookupCache(object):
-    CARGO_TEAMNAMES_INPUTS_SEP = ";"
-    CARGO_TEAMNAMES_FIELDS = ["Link", "Longname", "Short", "Medium", "Exception", "Dark", "Black",
-                              "Inputs__full=Inputs"]
-
     def __init__(self, site: Site, cargo_client: CargoClient = None):
         self.site = site
         self.cargo_client = cargo_client
@@ -56,7 +52,7 @@ class EsportsLookupCache(object):
 
     def get(self, filename, key, length, allow_fallback=False):
         """
-        Returrns the length of the lookup of a key requested from the filename requested. Assumes the file has
+        Returns the length of the lookup of a key requested from the filename requested. Assumes the file has
         the same structure as the -names modules on Leaguepedia.
 
         :param filename: "Champion", "Role", etc. - the name of the file
@@ -66,9 +62,9 @@ class EsportsLookupCache(object):
         :return: Correct lookup value provided, or None if it's not found
         :return: Correct lookup value provided, or None if it's not found
         """
-        file = self._get_json_lookup(filename)
         if key is None:
             return None
+        file = self._get_json_lookup(filename)
         key = key.lower()
         if key not in file:
             if allow_fallback:
@@ -91,12 +87,10 @@ class EsportsLookupCache(object):
         :param allow_fallback: Whether or not to fallback to returning the key if it's missing in the lookup
         :return: The requested property of the team corresponding to the given key
         """
-        # Mostly a copy of self.get but if I used a _get_raw (?) function or something like that
-        # to be used by both I wouldn't know how to call different exceptions with different params
-        if not self.cargo_teamnames_cache:
-            self._populate_cargo_teamnames()
         if key is None:
             return None
+        if not self.cargo_teamnames_cache:
+            self._populate_cargo_teamnames()
         key = key.lower()
         if key not in self.cargo_teamnames_cache:
             if allow_fallback:
@@ -112,17 +106,16 @@ class EsportsLookupCache(object):
         Queries all teamnames from cargo, builds a dictionary using inputs as a key
         and caches the result. Also splits the Inputs field.
         """
-        # I think at some point and maybe for non-admins this query could take a while
-        # and it could be improved to maybe only query the teams we need,
-        # but the parser does one team at a time and makes it a little bit
-        # difficult to implement, anyways we will cache the result so it's not that bad
+        cargo_teamnames_inputs_sep = ";"
+        cargo_teamnames_fields = ["Link", "Longname", "Short", "Medium", "Exception", "Class",
+                                  "Inputs__full=Inputs"]
         result = self.cargo_client.query(
             tables="Teamnames",
-            fields=", ".join(self.CARGO_TEAMNAMES_FIELDS)
+            fields=", ".join(cargo_teamnames_fields)
         )
         d = {}
         for item in result:
-            item["Inputs"] = item["Inputs"].split(self.CARGO_TEAMNAMES_INPUTS_SEP)
+            item["Inputs"] = item["Inputs"].split(cargo_teamnames_inputs_sep)
             d.update(dict.fromkeys(item["Inputs"], item))
         self.cargo_teamnames_cache = d
 
@@ -249,9 +242,8 @@ class EsportsLookupCache(object):
                 d[item['Team']] = {}
             team_entry = d[item['Team']]
             if item['ID'] is None:
-                # case of redlinks
-                # TODO: maybe don't ignore redlinks?
-                continue
+                item["DisambiguatedName"] = item["TournamentName"]
+                item['ID'] = re.sub(r' \(.+\)$', '', item["DisambiguatedName"])
             if item['DisambiguatedName'] is None:
                 continue
             if unidecode(item['ID']) == unidecode(item['DisambiguatedName']):
